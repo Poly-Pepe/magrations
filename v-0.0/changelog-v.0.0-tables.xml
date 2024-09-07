@@ -1,0 +1,169 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog 
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog" 
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" 
+    xmlns:pro="http://www.liquibase.org/xml/ns/pro" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/pro http://www.liquibase.org/xml/ns/pro/liquibase-pro-latest.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet context="init" author="BinaryBun" id="07.09.24-0.0-patients">
+        <sql>
+            /*==============================================================*/
+            /* Table: patients                                              */
+            /*==============================================================*/
+
+            CREATE TABLE public.patients (
+                id          SERIAL PRIMARY KEY,
+                name        VARCHAR(255) NOT NULL,
+                gender      VARCHAR(10) NOT NULL,
+                birth_date  DATE NOT NULL,
+                address     TEXT NOT NULL
+            );
+
+            -- Комментарии к таблице и столбцам
+            COMMENT ON TABLE public.patients IS 'Информация о пациентах';
+            COMMENT ON COLUMN public.patients.id IS 'Идентификатор пациента';
+            COMMENT ON COLUMN public.patients.name IS 'Имя пациента';
+            COMMENT ON COLUMN public.patients.gender IS 'Пол пациента';
+            COMMENT ON COLUMN public.patients.birth_date IS 'Дата рождения пациента';
+            COMMENT ON COLUMN public.patients.address IS 'Домашний адрес пациента';
+
+            -- Права доступа
+            GRANT SELECT ON public.patients TO medicine_reader;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON public.patients TO medicine_writer;
+
+            GRANT USAGE, SELECT ON SEQUENCE public.patients_id_seq TO medicine_writer;
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS public.patients CASCADE;
+        </rollback>
+    </changeSet>
+
+    <changeSet context="init" author="BinaryBun" id="07.09.24-0.0-doctors">
+        <sql>
+            /*==============================================================*/
+            /* Table: doctors                                               */
+            /*==============================================================*/
+
+            CREATE TABLE public.doctors (
+                id      SERIAL PRIMARY KEY,
+                name    VARCHAR(255) NOT NULL
+            );
+
+            -- Комментарии к таблице и столбцам
+            COMMENT ON TABLE public.doctors IS 'Информация о врачах';
+            COMMENT ON COLUMN public.doctors.id IS 'Идентификатор врача';
+            COMMENT ON COLUMN public.doctors.name IS 'Имя врача';
+
+            -- Права доступа
+            GRANT SELECT ON public.doctors TO medicine_reader;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON public.doctors TO medicine_writer;
+
+            GRANT USAGE, SELECT ON SEQUENCE public.doctors_id_seq TO medicine_writer;
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS public.doctors CASCADE;
+        </rollback>
+    </changeSet>
+
+    <changeSet context="init" author="BinaryBun" id="07.09.24-0.0-examinations">
+        <sql>
+            /*==============================================================*/
+            /* Table: examinations                                          */
+            /*==============================================================*/
+
+            CREATE TABLE public.examinations (
+                id                 SERIAL PRIMARY KEY,
+                patient_id         INT REFERENCES public.patients(id),
+                doctor_id          INT REFERENCES public.doctors(id),
+                examination_date   DATE NOT NULL,
+                examination_place  TEXT NOT NULL,
+                symptoms           TEXT,
+                diagnosis          VARCHAR(255),
+                prescriptions      TEXT
+            );
+
+            -- Комментарии к таблице и столбцам
+            COMMENT ON TABLE public.examinations IS 'Информация об осмотрах пациентов';
+            COMMENT ON COLUMN public.examinations.id IS 'Идентификатор осмотра';
+            COMMENT ON COLUMN public.examinations.patient_id IS 'ID пациента';
+            COMMENT ON COLUMN public.examinations.doctor_id IS 'ID врача';
+            COMMENT ON COLUMN public.examinations.examination_date IS 'Дата осмотра';
+            COMMENT ON COLUMN public.examinations.examination_place IS 'Место проведения осмотра';
+            COMMENT ON COLUMN public.examinations.symptoms IS 'Симптомы, отмеченные врачом';
+            COMMENT ON COLUMN public.examinations.diagnosis IS 'Поставленный диагноз';
+            COMMENT ON COLUMN public.examinations.prescriptions IS 'Предписания врача';
+
+            -- Права доступа
+            GRANT SELECT ON public.examinations TO medicine_reader;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON public.examinations TO medicine_writer;
+
+            GRANT USAGE, SELECT ON SEQUENCE public.examinations_id_seq TO medicine_writer;
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS public.examinations CASCADE;
+        </rollback>
+    </changeSet>
+
+    <changeSet context="init" author="BinaryBun" id="07.09.24-0.0-medicines">
+        <sql>
+            /*==============================================================*/
+            /* Table: medicines                                             */
+            /*==============================================================*/
+
+            CREATE TABLE public.medicines (
+                id                    SERIAL PRIMARY KEY,
+                name                  VARCHAR(255) NOT NULL,
+                method_of_administration TEXT NOT NULL,
+                description           TEXT,
+                side_effects          TEXT
+            );
+
+            -- Комментарии к таблице и столбцам
+            COMMENT ON TABLE public.medicines IS 'Информация о лекарствах';
+            COMMENT ON COLUMN public.medicines.id IS 'Идентификатор лекарства';
+            COMMENT ON COLUMN public.medicines.name IS 'Название лекарства';
+            COMMENT ON COLUMN public.medicines.method_of_administration IS 'Способ приема лекарства';
+            COMMENT ON COLUMN public.medicines.description IS 'Описание предполагаемого действия лекарства';
+            COMMENT ON COLUMN public.medicines.side_effects IS 'Побочные эффекты лекарства';
+
+            -- Права доступа
+            GRANT SELECT ON public.medicines TO medicine_reader;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON public.medicines TO medicine_writer;
+
+            GRANT USAGE, SELECT ON SEQUENCE public.medicines_id_seq TO medicine_writer;
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS public.medicines CASCADE;
+        </rollback>
+    </changeSet>
+
+    <changeSet context="init" author="BinaryBun" id="07.09.24-0.0-prescriptions">
+        <sql>
+            /*==============================================================*/
+            /* Table: prescriptions                                         */
+            /*==============================================================*/
+
+            CREATE TABLE public.prescriptions (
+                id             SERIAL PRIMARY KEY,
+                examination_id INT REFERENCES public.examinations(id),
+                medicine_id    INT REFERENCES public.medicines(id)
+            );
+
+            -- Комментарии к таблице и столбцам
+            COMMENT ON TABLE public.prescriptions IS 'Информация о назначении лекарств';
+            COMMENT ON COLUMN public.prescriptions.id IS 'Идентификатор назначения лекарства';
+            COMMENT ON COLUMN public.prescriptions.examination_id IS 'ID осмотра';
+            COMMENT ON COLUMN public.prescriptions.medicine_id IS 'ID лекарства';
+
+            -- Права доступа
+            GRANT SELECT ON public.prescriptions TO medicine_reader;
+            GRANT SELECT, INSERT, UPDATE, DELETE ON public.prescriptions TO medicine_writer;
+
+            GRANT USAGE, SELECT ON SEQUENCE public.prescriptions_id_seq TO medicine_writer;
+        </sql>
+        <rollback>
+            DROP TABLE IF EXISTS public.prescriptions CASCADE;
+        </rollback>
+    </changeSet>
+</databaseChangeLog>
