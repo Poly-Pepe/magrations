@@ -1,0 +1,38 @@
+pipeline {
+    agent { label 'prod-stand' }
+
+    triggers { pollSCM('* * * * *') }
+    options { timestamps() }
+
+    environment {
+        LIQUIBASE_PROPERTIES_FILE = 'liquibase.properties'
+        LIQUIBASE_PASSWORD = '1812295'
+    }
+
+    stages {
+        stage('Apply Liquibase Migrations') {
+            steps {
+                script {
+                    sh """
+                        liquibase --defaultsFile=${env.LIQUIBASE_PROPERTIES_FILE} \
+                            --password=${env.LIQUIBASE_PASSWORD}  update
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            script {
+                echo 'Migration process failed.'
+            }
+        }
+
+        success {
+            script {
+                echo 'Migration process completed successfully.'
+            }
+        }
+    }
+}
