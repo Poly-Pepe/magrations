@@ -6,6 +6,7 @@ pipeline {
 
     environment {
         LIQUIBASE_PROPERTIES_FILE = 'liquibase.properties'
+        LIQUIBASE_PASSWORD = '1812295'
     }
 
     stages {
@@ -13,7 +14,8 @@ pipeline {
             steps {
                 script {
                     sh """
-                        liquibase --defaultsFile=${env.LIQUIBASE_PROPERTIES_FILE} update
+                        liquibase --defaultsFile=${env.LIQUIBASE_PROPERTIES_FILE} \
+                            --password=${env.LIQUIBASE_PASSWORD}  update
                     """
                 }
             }
