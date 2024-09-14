@@ -6,7 +6,7 @@ pipeline {
 
     environment {
         LIQUIBASE_PROPERTIES_FILE = 'liquibase.properties'
-        LIQUIBASE_PASSWORD = '0086478826'
+        LIQUIBASE_PASSWORD = '470284448'
     }
 
     stages {
